@@ -135,6 +135,6 @@
 
 <?php if ( $wpo_wcpdf->get_footer() ): ?>
 <div id="footer">
-	<?php $wpo_wcpdf->footer(); ?>
+	<?php $wpo_wcpdf->footer(); ?> {{PAGE_COUNT}}
 </div><!-- #letter-footer -->
 <?php endif; ?>
