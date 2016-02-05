@@ -48,7 +48,8 @@ if ( ! class_exists( 'WooCommerce_PDF_Invoices_Export' ) ) {
 			}
 
 			// make page number replacements
-			// add_action( 'wpo_wcpdf_after_dompdf_render', array($this, 'page_number_replacements' ), 9, 4 );
+			add_action( 'wpo_wcpdf_processed_template_html', array($this, 'clear_page_number_styles' ), 10, 3 );
+			add_action( 'wpo_wcpdf_after_dompdf_render', array($this, 'page_number_replacements' ), 9, 4 );
 
 			add_action( 'wp_ajax_generate_wpo_wcpdf', array($this, 'generate_pdf_ajax' ));
 			add_filter( 'woocommerce_email_attachments', array( $this, 'attach_pdf_to_email' ), 99, 3);
@@ -317,27 +318,34 @@ if ( ! class_exists( 'WooCommerce_PDF_Invoices_Export' ) ) {
 			return $complete_document;
 		}
 
+		public function clear_page_number_styles ( $html, $template_type, $order_ids ) {
+			$html = str_replace('{{PAGE_COUNT}}', '<span class="pagecount">{{PAGE_COUNT}}</span>', $html);
+			$html = str_replace('{{PAGE_NUM}}', '<span class="pagenum"></span>', $html );
+			return $html;
+		}
+
 		public function page_number_replacements ( $dompdf, $html, $template_type, $order_ids ) {
 			$placeholder = '{{PAGE_COUNT}}';
 
 			// check if placeholder is used
 			if (strpos($html, $placeholder) !== false ) {
-				$canvas = $dompdf->get_canvas();
-				$dompdf->page_script('
-					foreach ($pdf->get_cpdf()->objects as &$object)
-					{
-						if (array_key_exists("c", $object) && strpos($object["c"], "{{PAGE_COUNT}}") !== false)
-						{
-							$object["c"] = str_replace( "{{PAGE_COUNT}}" , $pdf->get_page_count() , $object["c"] );
-						}
-					}
-				');
-
-				// foreach ($dompdf->get_canvas()->get_cpdf()->objects as &$object) {
-				// 	if (array_key_exists("c", $object) && strpos($object["c"], $placeholder) !== false) {
-				// 		$object["c"] = str_replace( $placeholder , $dompdf->get_page_count() , $object["c"] );
+				// die('found page count');
+				// $canvas = $dompdf->get_canvas();
+				// $dompdf->page_script('
+				// 	foreach ($pdf->get_cpdf()->objects as &$object)
+				// 	{
+				// 		if (array_key_exists("c", $object) && strpos($object["c"], "{{PAGE_COUNT}}") !== false)
+				// 		{
+				// 			$object["c"] = str_replace( "{{PAGE_COUNT}}" , $pdf->get_page_count() , $object["c"] );
+				// 		}
 				// 	}
-				// }
+				// ');
+
+				foreach ($dompdf->get_canvas()->get_cpdf()->objects as &$object) {
+					if (array_key_exists("c", $object) && strpos($object["c"], $placeholder) !== false) {
+						$object["c"] = str_replace( $placeholder , $dompdf->get_canvas()->get_page_count() , $object["c"] );
+					}
+				}
 			}
 
 			return $dompdf;

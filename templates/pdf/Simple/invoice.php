@@ -22,7 +22,7 @@
 </h1>
 
 <?php do_action( 'wpo_wcpdf_after_document_label', $wpo_wcpdf->export->template_type, $wpo_wcpdf->export->order ); ?>
-
+{{PAGE_NUM}}/{{PAGE_COUNT}}
 <table class="order-data-addresses">
 	<tr>
 		<td class="address billing-address">
@@ -135,6 +135,6 @@
 
 <?php if ( $wpo_wcpdf->get_footer() ): ?>
 <div id="footer">
-	<?php $wpo_wcpdf->footer(); ?> {{PAGE_COUNT}}
+	<?php $wpo_wcpdf->footer(); ?>
 </div><!-- #letter-footer -->
 <?php endif; ?>
